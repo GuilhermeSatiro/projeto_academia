@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Listagem de alunos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    </head>
+<body class="bg-light min-vh-100 d-flex flex-column">
+    <div id="menu"></div>
+
+    <main id="principal" class="container-fluid flex-fill d-flex align-items-start justify-content-center py-4">
+        <div class="card shadow p-4 w-100">
+            <h2 class="mb-4">Alunos cadastrados</h2>
+            <div class="mb-3">
+                
+                <button type="button" class="btn btn-primary me-2" id="btnIncluir">Incluir</button>
+                <button type="button" class="btn btn-primary me-2" id="btnEditar">Editar</button>
+                <button type="button" class="btn btn-danger" id="btnExcluir">Excluir</button>
+            </div>
+            
+            <table class="table table-striped table-hover align-middle">
+                <thead class="table-danger">
+                    <tr>
+                        <th scope="col">
+                            <input type="checkbox" id="checkTodos" class="form-check-input">
+                        </th>
+                        <th scope="col">Nome</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Perfil</th>
+                        <th scope="col">ID (Firebase)</th>
+                    </tr>
+                </thead>
+                
+                <tbody id="lista-alunos-corpo">
+                    <tr>
+                        <td colspan="5" class="text-center">Carregando alunos...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+    
+    <div id="rodape"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD9C8wbh4jwaYLHuH5GSAn5hWKxCXjg6Ag",
+            authDomain: "trabalho-faculdade-7fee6.firebaseapp.com",
+            projectId: "trabalho-faculdade-7fee6",
+            storageBucket: "trabalho-faculdade-7fee6.firebasestorage.app",
+            messagingSenderId: "681763783199",
+            appId: "1:681763783199:web:edd45fdff695a44f310b2a",
+            measurementId: "G-F37XKMBDJT"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        document.addEventListener("DOMContentLoaded", function() {
+            
+            const tabelaCorpo = document.getElementById('lista-alunos-corpo');
+
+            async function carregarAlunos() {
+                tabelaCorpo.innerHTML = '<tr><td colspan="5" class="text-center">Carregando...</td></tr>';
+                
+                let html = "";
+
+                try {
+                    const querySnapshot = await getDocs(collection(db, "alunos"));
+                    
+                    if (querySnapshot.empty) {
+                        tabelaCorpo.innerHTML = '<tr><td colspan="5" class="text-center">Nenhum aluno cadastrado.</td></tr>';
+                        return;
+                    }
+
+                    querySnapshot.forEach((doc) => {
+                        const id = doc.id; 
+                        const aluno = doc.data(); 
+
+                        html += `
+                            <tr>
+                                <td>
+                                    <input type="checkbox" class="user_check form-check-input" name="sel[]" value="${id}">
+                                </td>
+                                <td>${aluno.nome}</td>
+                                <td>${aluno.email}</td>
+                                <td>${aluno.perfil}</td>
+                                <td>${id}</td> 
+                            </tr>
+                        `;
+                    });
+
+                    tabelaCorpo.innerHTML = html;
+
+                } catch (error) {
+                    console.error("Erro ao buscar alunos:", error);
+                    tabelaCorpo.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Erro ao carregar alunos.</td></tr>';
+                }
+            }
+
+            document.getElementById('btnIncluir').addEventListener('click', () => {
+                window.location.href = 'aluno_incluir.html';
+            });
+
+            document.getElementById('btnEditar').addEventListener('click', () => {
+                const marcados = document.querySelectorAll('input[name="sel[]"]:checked');
+                
+                if (marcados.length === 0) {
+                    alert("Selecione um registro para editar.");
+                    return;
+                }
+                if (marcados.length > 1) {
+                    alert("Selecione apenas um registro para editar.");
+                    return;
+                }
+                
+                const id = marcados[0].value;
+                window.location.href = `aluno_editar.html?id=${id}`;
+            });
+
+            document.getElementById('btnExcluir').addEventListener('click', async () => {
+                const marcados = document.querySelectorAll('input[name="sel[]"]:checked');
+                
+                if (marcados.length === 0) {
+                    alert("Selecione pelo menos um registro para excluir.");
+                    return;
+                }
+
+                if (confirm(`Tem certeza que deseja excluir ${marcados.length} aluno(s)?`)) {
+                    try {
+                        for (const checkbox of marcados) {
+                            const id = checkbox.value;
+                            await deleteDoc(doc(db, "alunos", id));
+                            
+                        }
+                        
+                        alert("Aluno(s) excluído(s) com sucesso!");
+                        carregarAlunos();
+
+                    } catch (error) {
+                        console.error("Erro ao excluir:", error);
+                        alert("Ocorreu um erro ao excluir os alunos.");
+                    }
+                }
+            });
+
+            document.getElementById('checkTodos').addEventListener('click', function(e) {
+                const checkboxes = document.querySelectorAll('input[name="sel[]"]');
+                for (const checkbox of checkboxes) {
+                    checkbox.checked = e.target.checked;
+                }
+            });
+
+            fetch('../cabecalho.html').then(resp => resp.text()).then(html => document.getElementById('menu').innerHTML = html);
+            fetch('../rodape.html').then(resp => resp.text()).then(html => document.getElementById('rodape').innerHTML = html);
+
+            carregarAlunos();
+        });
+    </script>
+</body>
+</html>
