@@ -80,7 +80,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             alunoId = urlParams.get('id');
 
-            if (!instrutorId) {
+            if (!alunoId) {
                 alert("ID do aluno não encontrado! Voltando para a lista.");
                 window.location.href = 'aluno_listar.html';
                 return;
