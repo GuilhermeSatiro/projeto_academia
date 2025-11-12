@@ -127,7 +127,7 @@
             }
 
             try {
-                const docRef = doc(db, "alunos", instrutorId);
+                const docRef = doc(db, "alunos", alunoId);
 
                 await updateDoc(docRef, {
                     nome: nome,
