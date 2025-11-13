@@ -120,12 +120,10 @@
 
                 console.log("Dados salvos no Firestore!");
 
-                // 5. Dar feedback e redirecionar
                 alert("Aluno salvo com sucesso!");
                 window.location.href = 'aluno_listar.html'; // Redireciona para a listagem
 
             } catch (error) {
-                // 6. Tratar erros
                 console.error("Erro ao salvar aluno:", error);
                 
                 if (error.code == 'auth/email-already-in-use') {
