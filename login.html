@@ -74,18 +74,12 @@
                 }
 
                 try {
-                    // ======================================================
-                    // A CORREÇÃO ESTÁ AQUI:
-                    // Força o Firebase a salvar o login no localStorage
-                    // ANTES de tentar fazer o login.
                     await setPersistence(auth, browserLocalPersistence);
                     // ======================================================
 
-                    // 6. Fazer o login
                     const userCredential = await signInWithEmailAndPassword(auth, email, senha);
 
                     alert("Login realizado com sucesso!");
-                    // Redireciona para a página principal CORRETA
                     window.location.href = 'principal.html';
 
                 } catch (error) {
